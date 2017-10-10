@@ -25,6 +25,18 @@
 # 
 #  It works  by walking the process tree backwards starting with it’s own
 #  PID, using the info in /proc.
+#
+#  EXAMPLE USAGE
+#
+#  $ bash   
+#  $ depth
+#    ---bash---bash     (Depth=2) 
+#  $ screen
+#  $ sudo bash
+#  [sudo] password for sas:
+#  # su - LabsAdmin
+#  $ depth
+#    ---bash---bash---screen---screen---bash---sudo---bash---su---bash     (Depth=9)
 
 VAL=0
 VERB="   "
