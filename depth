@@ -1,0 +1,67 @@
+#!/bin/bash
+#
+# cerner_2^5_2017
+#
+# LINES OF CODE
+# bash-4.1$ sed '/^\s*#/d;/^\s*$/d' /tmp/depth | wc -l
+# 32
+#
+# AUTHOR
+# sas
+# 
+# This is a scaled down version of depth for 2^5 
+# 
+# You don't often see recurrsion in Bash so I thought
+# it might be interesting to others.
+# 
+# Requires Linux /proc filesystem 
+#
+#DESCRIPTION
+#  Depth is designed to help you out when you find yourself several levels
+#  deep in subshells.  In this simplfied version to fit in 32 lines of code
+#  it returns the a "process sequence" and the number of levels it thinks 
+#  you are from your inital shell.  We say "it thinks you are" since it has 
+#  no way of knowing for sure, so it makes some simple assumptions.
+# 
+#  It works  by walking the process tree backwards starting with it’s own
+#  PID, using the info in /proc.
+
+VAL=0
+VERB="   "
+
+# Get the Parent PID
+read null NAME null PARPID null < /proc/$$/stat
+
+function getPPID {
+  CURPID=$1
+  local PARPID
+  read null NAME null PARPID null < /proc/$CURPID/stat
+  NAME=${NAME#(}
+  NAME=${NAME%)}
+  if [[ -z "$NAME" || -z "$PARPID" ]]
+  then
+    echo ERROR: failed to read /proc/$CURPID/stat
+    exit 3
+  fi
+  case $NAME in
+  init) # init, there is nowhere to go from here
+      ((VAL-1))
+        echo " $VERB  (Depth=$VAL)"
+        return $VAL
+      ;;
+   sshd|xterm|gnome-terminal) # stuff that starts what we call a session
+      ((VAL-1))
+        echo " $VERB  (Depth=$VAL)"
+        return $VAL
+      ;;
+   *)
+      ((VAL+=1))
+        VERB="---"${NAME}${VERB} 
+      getPPID $PARPID
+   esac
+}
+
+getPPID $PARPID
+
+
+
