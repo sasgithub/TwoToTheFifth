@@ -37,6 +37,13 @@
 #  # su - LabsAdmin
 #  $ depth
 #    ---bash---bash---screen---screen---bash---sudo---bash---su---bash     (Depth=9)
+#
+#  NOTES
+#  screen appearing twice is not a bug, there are two screen processes
+#  If you knew the PID of your first bash shell you could get similar output from pstree
+#  $ pstree 2628
+#  bash---bash---screen---screen---bash---sudo---bash---su---bash---pstree
+
 
 VAL=0
 VERB="   "
