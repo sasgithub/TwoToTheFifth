@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# cerner_2^5_2017
+# cerner_2^5_2019
 #
 # LINES OF CODE
 # bash-4.1$ sed '/^\s*#/d;/^\s*$/d' /tmp/depth | wc -l
@@ -40,7 +40,8 @@
 #
 #  NOTES
 #  screen appearing twice is not a bug, there are two screen processes
-#  If you knew the PID of your first bash shell you could get similar output from pstree
+#  If you knew the PID of your first bash shell you may be able to get
+#  similar output from pstree (some version of pstree don't support this)
 #  $ pstree 2628
 #  bash---bash---screen---screen---bash---sudo---bash---su---bash---pstree
 
