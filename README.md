@@ -2,10 +2,9 @@
 2^5 Programming Competition Submissions
 
 32 Days
-
 32 Lines or Less
+Capture "Engineering Collaboration" in code.
 
-In celebration of Programmers’ Day, Cerner is holding a programming competition for the third year in a row. For the next 32 days (September 13-October 16), we will be accepting code submissions (in any language) that represent the concept of engineering impact.
-Rules can be found at the following URL;
+As a tradition in further celebrating Programmer's Day that occurred on September 13th, we are having our annual programming competition for the eighth year in a row. For 32 days (October 1 - November 1), we will be accepting code submissions (in any language) that represent the concept of engineering collaboration.  Rules can be found below.
 
-https://connect.ucern.com/docs/DOC-654796
+https://cernerprod.sharepoint.com/sites/DevCulture/SitePages/2%5E5-Coding-Competition-2021.aspx
