@@ -1,0 +1,69 @@
+#!/usr/local/bin/bash
+#
+# IEEE 1541-2002 complient
+#
+# sas
+#
+# stripUnits in effect converts to bytes which is handy
+# for doing caculations.
+#
+# this version contains example code for the
+# cerner_2tothe5th_2021
+# programming contest so that the function is
+# actually called if this is run from the command line
+# the normal usage would be to souce this file to get
+# access to the function.
+#
+# sed '/^\s*#/d;/^\s*$/d' stripUnits | wc -l
+#     29
+#
+# stripUnits supports one or two arguments
+#   One argument can take one of two forms
+#      A string with an integer followed by the units with no space between
+#      A string with an integer followed by space(s) and then the units
+#   Two arguments with the first argument being and interger and the second
+#   being the units
+#
+######## Example function usage #########
+# val=$(stripUnits 23MB)
+# echo $?  # return code in case you care.
+# echo $val
+#
+# see the file test for a simple useage
+#
+######## Example command line useage ######
+# $ stripUnits 23 MiB
+
+function stripUnits {
+    if (( $# == 2 ))
+    then
+      value=$1$2
+    else
+          value=${1// /}   # We don't need no stinking spaces.
+    fi
+    units=$(echo ${value##*[0-9]})
+    number=$(echo ${value%%[A-z]*})
+    case "$units" in
+       B) echo $number ;;
+      KB) echo $(($number * 1000 )) ;;
+      Ki) echo $(($number * 1024 )) ;;
+      MB) echo $(($number * $((1000**2)) )) ;;
+      MiB) echo $(($number * $((2**20)) )) ;;
+      GB)  echo $(($number * $((1000**3)) )) ;;
+      GiB) echo $(($number * $((2**30)) )) ;;
+      TB)  echo $(($number * $((1000**4)) )) ;;
+      TiB) echo $(($number * $((2**40)) )) ;;
+      PB)  echo $(($number * $((1000**5)) )) ;;
+      PiB) echo $(($number * $((2**50)) )) ;;
+      EB)  echo $(($number * $((1000**6)) )) ;;
+      EiB) echo $(($number * $((2**60)) )) ;;
+       # unlikely to be higher anytime soon
+      *) echo 0 ; return 1
+    esac
+    return
+}
+
+# if this is not included by some other script, call the function
+# passing the command line args
+#
+[[ "${BASH_SOURCE[0]}" = "${0}" ]] && echo $(stripUnits "$@")
