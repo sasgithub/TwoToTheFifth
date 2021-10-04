@@ -1,0 +1,90 @@
+#!/usr/local/bin/bash
+#
+# sas
+#
+# convertUnits allows one to switch between IEEE 1541-2002
+# units (for bytes in this case).
+#
+# this version contains example code for the
+# cerner_2tothe5th_2021
+# programming contest so that the function is
+# actually called if this is run from the command line
+# the normal usage would be to souce this file to get
+# access to the function.
+#
+# sed '/^\s*#/d;/^\s*$/d' convertUnits | wc -l
+#     32
+#
+# convertUnits supports two or three auguments
+#  Two argument would be of a form like
+#     convertUnits 23MB MiB
+#  where the first argument is a number with the
+#  units appended and the second argument is the
+#  untis to which you wish to convert.
+#  Three arguments would be of a form like
+#     convertUnits 23 Gib MB
+#  where the first argument is a number, the
+#  second argument is the corrent untis and
+#  the third is the untis to which you wish to convert.
+#
+#  Note: the output will be given ether as
+#        number with the units appenced or
+#        number with the units seperated by space
+#        based on how you specifed it in the call.
+#
+######## Example function usage #########
+# val=$(convertUnits 23MB MiB)
+# echo $?  # return code in case you care.
+# echo $val
+#
+# see the file test for a simple useage
+#
+######## Example command line useage ######
+# $ convert Units 23 MiB MB
+
+function convertUnits {
+  if (( $# == 3 ))
+  then
+    num=$1; from=$2; to=$3 ; space=" "
+  elif (( $# == 2 ))
+  then
+    value=$1 ; to=$2 ;  space=''
+    from=$(echo ${value##*[0-9]}) # pick off the units
+    num=$(echo ${value%%[A-z]*})  # pick off the number
+  else return 1 ; fi   #<< that's ugly blame the 32 line limit
+# Lets create variables with the names of the SI prefix units for bytes
+# in each variable place the unit and the "thousands" exponent.
+  j=0 ; for i in B KB MB GB TB PB EB ; do var=$i ; declare $var="$i $j"; ((j++)); done
+# luckily for us the exponent needed for the binary based units (ie the exponent to
+# which 1024 is raised).
+#    In retrospect the unit was probably superflous as the name of the variable was
+# sufficient.  I'll leave that simplification to the reader as an excercise.
+
+# poke out the "i"s if they exist in case it is a binary unit and populate
+  tmp=${from//i/} ; fromv=( ${!tmp} )
+  tmp=${to//i/} ; tov=( ${!tmp} )
+  if [[ "$from" =~ .*i.* ]]
+  then
+    if [[ "$to" =~ .*i.* ]]
+    then
+# one of the short comings of bash is it's lack of support for floating point numbers.
+# so we resort to Perl.   Does that count as using another language?
+      new=$(perl -E "say $num*(2**(${fromv[1]}*10)/(1024**${tov[1]}))" )
+    else
+      new=$(perl -E "say $num*(2**(${fromv[1]}*10)/(1000**${tov[1]}))" )
+    fi
+  else if [[ "$to" =~ .*i.* ]] ;
+    then
+      new=$(perl -E "say $num*(1000**${fromv[1]}/(1024**${tov[1]}))" )
+    else
+      new=$(perl -E "say $num*(1000**${fromv[1]}/(1000**${tov[1]}))" )
+    fi
+  fi
+  echo $new$space${tov[0]}
+  return
+}
+
+# if this is not included by some other script, call the function
+# passing the command line args
+#
+[[ "${BASH_SOURCE[0]}" = "${0}" ]] && echo $(convertUnits "$@")
