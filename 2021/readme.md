@@ -7,4 +7,4 @@
 ## 2^5 programming contest entries
 
 - stripUnits - an IEEE 1541-2002 complient unit stripper
-
+- convertUnits - an  IEC 80000-13, IEEE 1541 complient converter
