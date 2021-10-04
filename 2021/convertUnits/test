@@ -1,0 +1,4 @@
+#!/usr/local/bin/bash
+#
+. ./convertUnits
+echo  convertUnits 23GiB to MiB = $(stripUnits 23GiB MiB)
