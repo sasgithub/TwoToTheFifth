@@ -1,0 +1,74 @@
+#!/usr/local/bin/bash
+#
+# sas
+#
+# This is a simple blackjack game.
+#
+# A few features a commented out to make it in under the
+# 32 line requirement for the contest
+# cerner_2tothe5th_2021
+#
+# $ sed '/^\s*#/d;/^\s*$/d' blackjack | wc -l
+#      32
+#
+#                        GAME PLAY
+# Before playing the game you may want to make you font slightly larger
+# Launch the application to start the game.  It should clear you screen
+# and start dealing the cards.  Setup should be obvious assuming your
+# terminal has support for unicode and UTF-8.  I've only tested on a
+# Mac at this time.
+# After the cards are dealt (to 5 players and a dealer), player 1
+# will be prompted for a "Hit".  If you want another card type "yes" or "y"
+# (it's not case sensitive) and press "enter".  If you don't want another
+# card type "no" or "n".
+# After entering "no" play moved to player 2 , etc.
+# There are a couple wrinkles,
+# The dealer sometimes cheats and won't notice you have 21 and will still ask
+# you if you want another card (he likes to win).  Also the dealer has instituted
+# a new rule that anyone dealt two aces as there first two cards looses (I said he
+# he likes to win.
+#
+# It's getting late so I'll add the comments to the code later.  If you need the original
+# submission github is your friend
+#
+
+p=(0 0 0 0 0 0) ; ace=(0 0 0 0 0 0) ; xpos=(0 11 22 33 44 30) ; ypos=4; cardback="🂠" ; cnt=1 ; cards=() ; db=0 ; maxline=5
+for i in ♠ ♣ ♥ ♦ ; do for j in `seq 1 13` ; do cards[$cnt]="$j$i"; ((cnt++)); done ; done
+nd=( $(echo ${cards[*]} | tr ' ' '\n' | sed -e 's/11/J/ ; s/12/Q/ ; s/13/K/ ; s/^1\([♠♣♥♦]\)$/A\1/' | shuf | tr '\n' ' ') )
+
+function deal { a=0 ; local tmp=${nd[0]}; echo -n $tmp; nd=( ${nd[@]:1} ); [[ ${tmp%%[♠♣♥♦]} == A ]] && a=1 ; sleep .1;  return $(echo ${tmp%%[♠♣♥♦]} |sed -e 's/[JQK]/10/ ; s/A/11/'); }
+
+#function score { for j in `seq 0 4` ; do tput cup 7 $((xpos[j]+2)) ; echo -n ${p[$j]} ; done ; return; }
+
+function result { tput cup $ypos $((xpos[i])) ; echo -n $1 ; return; }
+
+tput clear ; tput cup 0 30 ; echo -n Dealer
+tput cup 5 0 ; echo -n "Player 1   Player 2   Player 3   Player 4   Player 5"
+for i in `seq 0 4` ; do tput cup 6 $((xpos[i])) ; deal; ((p[$i]+=$?)); ((ace[$i]+=a)) ; done
+tput cup 1 30 ; deal ; ((p[5]+=$?)); ((ace[5]+=a))
+for i in `seq 0 4` ; do tput cup 6 $((xpos[i]+4)) ;deal; ((p[$i]+=$?)); ((ace[$i]+=a)) ; done
+tput cup 1 34 ; downcard=$(deal) ; ((p[5]+=$?)) ; ((ace[5]+=a)); echo $cardback
+#score
+
+for i in `seq 0 4`; do if (( line > maxline )) ; then maxline=$line; fi
+   line=6; (( ace[$i] > 1 )) && { ((ace[$i]-=1)); ((p[$i]-=10));}
+   until (( ${p[$i]} > 21 ))
+   do ((line+=1))
+      tput cup $line $((i*11)) ; read -p "Hit? " YN ; tput cup $line $((i*11)) ; echo "         "
+      case "$YN" in [Yy]|[Yy][Ee][Ss] ) tput cup $line $((i*11)); deal; ((p[$i]+=$?)); ((ace[$i]+=a))
+          (( p[$i] == 21 )) && result Blackjack && break
+          if (( p[$i] > 21 )) ; then ((ace[$i])) && { ((ace[$i]-=1)); ((p[$i]-=10)); continue; }; result Bust ; break; fi ;;
+      [Nn]|[Nn][Oo] ) break ;; esac
+  done
+done
+cnt=4; tput cup 1 $((xpos[5]+cnt)) ; echo -n $downcard
+until (( p[5] >= 17 ))
+do ((cnt+=4)) ; tput cup 1 $((xpos[5]+cnt)); deal ; ((p[5]+=$?)) ; ((ace[5]+=a));
+  (( p[5] == 21 )) && break;
+  if (( p[5] > 21 )); then ((ace[5])) && { ((ace[5]-=1)); ((p[5]-=10)); continue; }; db=1 && break; fi
+done
+for i in `seq 0 4` ; do ypos=3
+if (( db == 1 &&  p[$i] < 22 )); then result Winner; elif (( p[$i] < 22 && p[5] < p[$i] )); then result Winner; elif (( p[5] == p[$i] )); then result Tie;   fi
+done
+
+tput cup $((maxline+4)) 25 ; echo "Game Over!"; echo ; echo
