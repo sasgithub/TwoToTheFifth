@@ -1,4 +1,4 @@
-#!/usr/local/bin/bash
+#!/bin/env bash 
 #
 . /Users/ss050205/bash/stripUnits
 echo stripUnits 23GiB = $(stripUnits 23GiB)
