@@ -31,15 +31,31 @@
 # It's getting late so I'll add the comments to the code later.  If you need the original
 # submission github is your friend
 #
-
+#
+# From the line below I'll be adding comments above the line to which they pertain.
+# ---------------------------------------------------------------------------------
+# Initialize some variables;  p - an array that stores the current total for each player
+#   ace - an array of the count of "unused" aces in each players hand
+#   xpos - horizontal position for each players inital deal
+#   ypos - vertical position starting point for status output
+#   cardback - The Unicode character for the back of a card.
+#   cnt - a counter     cards - an array used to hold the deck
+#   db - flag to show if the dealers total is greater than 21 (gone "bust")
+#   maxline - the maximum horizontal position used to deal cards
 p=(0 0 0 0 0 0) ; ace=(0 0 0 0 0 0) ; xpos=(0 11 22 33 44 30) ; ypos=4; cardback="🂠" ; cnt=1 ; cards=() ; db=0 ; maxline=5
+# Populate the cards array with a deck of cards
 for i in ♠ ♣ ♥ ♦ ; do for j in `seq 1 13` ; do cards[$cnt]="$j$i"; ((cnt++)); done ; done
+# new deal - create nd array with a shuffled deck of cards 
 nd=( $(echo ${cards[*]} | tr ' ' '\n' | sed -e 's/11/J/ ; s/12/Q/ ; s/13/K/ ; s/^1\([♠♣♥♦]\)$/A\1/' | shuf | tr '\n' ' ') )
+# function to deal a single card - set ace flag to zero, set tmp to the first card in the deck, echo the first card, 
+# delete the first card from the deck, if the card was an ace set the ace flage to 1, sleep for animated dealing
+# return the value of the dealt card.
+function deal { a=0 ; local tmp=${nd[0]}; echo -n $tmp; nd=( ${nd[@]:1} ); [[ ${tmp%%[♠♣♥♦]} == A ]] && a=1 ; sleep .5;  return $(echo ${tmp%%[♠♣♥♦]} |sed -e 's/[JQK]/10/ ; s/A/11/'); }
 
-function deal { a=0 ; local tmp=${nd[0]}; echo -n $tmp; nd=( ${nd[@]:1} ); [[ ${tmp%%[♠♣♥♦]} == A ]] && a=1 ; sleep .1;  return $(echo ${tmp%%[♠♣♥♦]} |sed -e 's/[JQK]/10/ ; s/A/11/'); }
-
+# the would print out the total for each player if it wasn't comment out to make the 32 line requirment
 #function score { for j in `seq 0 4` ; do tput cup 7 $((xpos[j]+2)) ; echo -n ${p[$j]} ; done ; return; }
 
+# function to output messages above a player 
 function result { tput cup $ypos $((xpos[i])) ; echo -n $1 ; return; }
 
 tput clear ; tput cup 0 30 ; echo -n Dealer
