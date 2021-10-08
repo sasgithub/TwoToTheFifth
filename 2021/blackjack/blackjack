@@ -24,9 +24,7 @@
 # After entering "no" play moved to player 2 , etc.
 # There are a couple wrinkles,
 # The dealer sometimes cheats and won't notice you have 21 and will still ask
-# you if you want another card (he likes to win).  Also the dealer has instituted
-# a new rule that anyone dealt two aces as there first two cards looses (I said he
-# he likes to win.
+# you if you want another card (he likes to win).  
 #
 # It's getting late so I'll add the comments to the code later.  If you need the original
 # submission github is your friend
@@ -34,6 +32,7 @@
 #
 # From the line below I'll be adding comments above the line to which they pertain.
 # ---------------------------------------------------------------------------------
+
 # Initialize some variables;  p - an array that stores the current total for each player
 #   ace - an array of the count of "unused" aces in each players hand
 #   xpos - horizontal position for each players inital deal
@@ -47,6 +46,7 @@ p=(0 0 0 0 0 0) ; ace=(0 0 0 0 0 0) ; xpos=(0 11 22 33 44 30) ; ypos=4; cardback
 for i in ♠ ♣ ♥ ♦ ; do for j in `seq 1 13` ; do cards[$cnt]="$j$i"; ((cnt++)); done ; done
 # new deal - create nd array with a shuffled deck of cards 
 nd=( $(echo ${cards[*]} | tr ' ' '\n' | sed -e 's/11/J/ ; s/12/Q/ ; s/13/K/ ; s/^1\([♠♣♥♦]\)$/A\1/' | shuf | tr '\n' ' ') )
+
 # function to deal a single card - set ace flag to zero, set tmp to the first card in the deck, echo the first card, 
 # delete the first card from the deck, if the card was an ace set the ace flage to 1, sleep for animated dealing
 # return the value of the dealt card.
@@ -58,33 +58,71 @@ function deal { a=0 ; local tmp=${nd[0]}; echo -n $tmp; nd=( ${nd[@]:1} ); [[ ${
 # function to output messages above a player 
 function result { tput cup $ypos $((xpos[i])) ; echo -n $1 ; return; }
 
+# Here we go
+# clear the screen, position the cursor, print "Dealer" heading
 tput clear ; tput cup 0 30 ; echo -n Dealer
+# position cursor, print Player headings
 tput cup 5 0 ; echo -n "Player 1   Player 2   Player 3   Player 4   Player 5"
+# loop through players, position cursor, deal a card, add value of card to player's total, update ace count if it's an ace
 for i in `seq 0 4` ; do tput cup 6 $((xpos[i])) ; deal; ((p[$i]+=$?)); ((ace[$i]+=a)) ; done
+# position cursor, deal a card to the dealer, add it's value to the dealer's total, update ace count if it's an ace
 tput cup 1 30 ; deal ; ((p[5]+=$?)); ((ace[5]+=a))
+# loop through players, position cursor, deal second card, add value of card to player's total, update ace count if it's an ace
 for i in `seq 0 4` ; do tput cup 6 $((xpos[i]+4)) ;deal; ((p[$i]+=$?)); ((ace[$i]+=a)) ; done
+# position cursor, store value of second card dealt, add value of card to dealer's total, update ace count if it's an ace, echo face down card"
 tput cup 1 34 ; downcard=$(deal) ; ((p[5]+=$?)) ; ((ace[5]+=a)); echo $cardback
+
+# this below line is comment out to meet the 32 line requirement
 #score
 
+# loop through players, check to see if maxline needs updated, update if we do
 for i in `seq 0 4`; do if (( line > maxline )) ; then maxline=$line; fi
-   line=6; (( ace[$i] > 1 )) && { ((ace[$i]-=1)); ((p[$i]-=10));}
-   until (( ${p[$i]} > 21 ))
-   do ((line+=1))
-      tput cup $line $((i*11)) ; read -p "Hit? " YN ; tput cup $line $((i*11)) ; echo "         "
-      case "$YN" in [Yy]|[Yy][Ee][Ss] ) tput cup $line $((i*11)); deal; ((p[$i]+=$?)); ((ace[$i]+=a))
-          (( p[$i] == 21 )) && result Blackjack && break
-          if (( p[$i] > 21 )) ; then ((ace[$i])) && { ((ace[$i]-=1)); ((p[$i]-=10)); continue; }; result Bust ; break; fi ;;
-      [Nn]|[Nn][Oo] ) break ;; esac
-  done
-done
-cnt=4; tput cup 1 $((xpos[5]+cnt)) ; echo -n $downcard
-until (( p[5] >= 17 ))
-do ((cnt+=4)) ; tput cup 1 $((xpos[5]+cnt)); deal ; ((p[5]+=$?)) ; ((ace[5]+=a));
-  (( p[5] == 21 )) && break;
-  if (( p[5] > 21 )); then ((ace[5])) && { ((ace[5]-=1)); ((p[5]-=10)); continue; }; db=1 && break; fi
-done
-for i in `seq 0 4` ; do ypos=3
-if (( db == 1 &&  p[$i] < 22 )); then result Winner; elif (( p[$i] < 22 && p[5] < p[$i] )); then result Winner; elif (( p[5] == p[$i] )); then result Tie;   fi
-done
 
+#  aces count as 11, so two aces total 22 which would be a bust so one ace gets counted as 1
+#  set line, check to see if player has more than one ace, if so decrement ace count for player and reduce total by 10
+   line=6; (( ace[$i] > 1 )) && { ((ace[$i]-=1)); ((p[$i]-=10));}
+#  loop until player total is greater than 21   
+   until (( ${p[$i]} > 21 ))
+# increment line   
+   do ((line+=1))
+# position cursor, prompt user do see if they want a hit and read response, position cursor, clear promp and response   
+      tput cup $line $((i*11)) ; read -p "Hit? " YN ; tput cup $line $((i*11)) ; echo "         "
+# check to see if response is y or yes case insisitively, if so position cursor, deal a card, add to player's total, update ace count      
+      case "$YN" in [Yy]|[Yy][Ee][Ss] ) tput cup $line $((i*11)); deal; ((p[$i]+=$?)); ((ace[$i]+=a))
+# check total to see if it's 21, if so call result function to output Blackjack result, exit until loop     
+          (( p[$i] == 21 )) && result Blackjack && break
+          
+# check total to see if it's over 21, if so check to see if player has an ace, if so decrement the ace count, reduce the score by 10
+# and continue the until loop, if the player didn't have an ace call result to output Bust and exit until loop
+          if (( p[$i] > 21 )) ; then ((ace[$i])) && { ((ace[$i]-=1)); ((p[$i]-=10)); continue; }; result Bust ; break; fi ;;
+# check to see if response is n or no case insisitively, if so exit until loop      
+      [Nn]|[Nn][Oo] ) break ;; esac
+# end of until loop      
+  done
+# end of for loop  
+done
+# reset cnt to 4, position cursor to the position of the dealers downcard, print the value of the down card "flip it"
+cnt=4; tput cup 1 $((xpos[5]+cnt)) ; echo -n $downcard
+# loop until the total of the dealer's hand is greater than or equal to 17
+until (( p[5] >= 17 ))
+# increment cnt to provide space between cards, position cursor, deal a card, add it's value, increment ace count
+do ((cnt+=4)) ; tput cup 1 $((xpos[5]+cnt)); deal ; ((p[5]+=$?)) ; ((ace[5]+=a));
+# check to see if the dealer has 21, if so exit the loop
+  (( p[5] == 21 )) && break;
+# if the deal has gone buts check to see if the dealer had an ace, if so decrement the ace count and reduce the total by 10
+# continue the loop (you could also break here) if the dealer didn't have and ace set db to 1 and break out of the loop
+  if (( p[5] > 21 )); then ((ace[5])) && { ((ace[5]-=1)); ((p[5]-=10)); continue; }; db=1 && break; fi
+# end of until loop  
+done
+# loop through players, set ypos above current status messages
+for i in `seq 0 4` ; do ypos=3
+
+# if the dealer went bust and the player has less then 22 call result with "Winner"
+# else if the player's total is less than 22 and the dealer's total is less than the player's call result with "Winner"
+# else if the player and the dealer have the same total call result with "Tie" (perhaps "Draw" would be better though
+# technically it's called a "Push")
+if (( db == 1 &&  p[$i] < 22 )); then result Winner; elif (( p[$i] < 22 && p[5] < p[$i] )); then result Winner; elif (( p[5] == p[$i] )); then result Tie;   fi
+# end of for loop
+done
+# position cursor below lowest card dealt, print "Game Over" and a couple new lines
 tput cup $((maxline+4)) 25 ; echo "Game Over!"; echo ; echo
