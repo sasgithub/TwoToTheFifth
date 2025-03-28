@@ -64,7 +64,7 @@ function getPPID {
     exit 3
   fi
   case $NAME in
-  init) # init, there is nowhere to go from here
+  init|systemd) # init or systemd, there is nowhere to go from here
       ((VAL-1))
         echo " $VERB  (Depth=$VAL)"
         return $VAL
