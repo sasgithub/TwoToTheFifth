@@ -19,7 +19,7 @@
 #DESCRIPTION
 #  Depth is designed to help you out when you find yourself several levels
 #  deep in subshells.  In this simplfied version to fit in 32 lines of code
-#  it returns the a "process sequence" and the number of levels it thinks 
+#  it returns a "process sequence" and the number of levels it thinks 
 #  you are from your inital shell.  We say "it thinks you are" since it has 
 #  no way of knowing for sure, so it makes some simple assumptions.
 # 
