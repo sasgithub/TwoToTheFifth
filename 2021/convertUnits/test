@@ -4,4 +4,4 @@
 # include convertUnits function
 . ./convertUnits
 # use it
-echo  convertUnits 23GiB to MiB = $(stripUnits 23GiB MiB)
+echo  convertUnits 23GiB MiB = $(convertUnits 23GiB MiB)

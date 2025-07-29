@@ -73,12 +73,10 @@ function convertUnits {
     else
       new=$(perl -E "say $num*(2**(${fromv[1]}*10)/(1000**${tov[1]}))" )
     fi
-  else if [[ "$to" =~ .*i.* ]] ;
-    then
-      new=$(perl -E "say $num*(1000**${fromv[1]}/(1024**${tov[1]}))" )
-    else
-      new=$(perl -E "say $num*(1000**${fromv[1]}/(1000**${tov[1]}))" )
-    fi
+  elif [[ "$to" =~ .*i.* ]] ; then
+    new=$(perl -E "say $num*(1000**${fromv[1]}/(1024**${tov[1]}))" )
+  else
+    new=$(perl -E "say $num*(1000**${fromv[1]}/(1000**${tov[1]}))" )
   fi
   echo $new$space${tov[0]}
   return
@@ -88,3 +86,4 @@ function convertUnits {
 # passing the command line args
 #
 [[ "${BASH_SOURCE[0]}" = "${0}" ]] && echo $(convertUnits "$@")
+
